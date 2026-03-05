@@ -1,4 +1,8 @@
-import Human from '@vladmandic/human';
+// Node-WASM build (no tfjs-node) for Vercel 250 MB limit; API matches main package
+import HumanWasm from '@vladmandic/human/dist/human.node-wasm.js';
+import type HumanConstructor from '@vladmandic/human';
+
+const Human = HumanWasm as unknown as typeof HumanConstructor;
 
 const config: Partial<ConstructorParameters<typeof Human>[0]> = {
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/',
@@ -25,4 +29,4 @@ export async function getHuman(): Promise<InstanceType<typeof Human>> {
   return humanInstance;
 }
 
-export type { Human };
+export type { Human } from '@vladmandic/human';

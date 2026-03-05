@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "npm rebuild @tensorflow/tfjs-node --build-addon-from-source"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +17,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.47.0",
     "@tensorflow/tfjs": "^4.22.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
     "@vladmandic/human": "^3.3.6",
     "sharp": "^0.34.5"
   }
