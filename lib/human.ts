@@ -11,6 +11,7 @@ const HumanWasm = nodeRequire(path.join(humanPkgDir, 'dist', 'human.node-wasm.js
 const Human = (HumanWasm.default ?? HumanWasm) as typeof HumanConstructor;
 
 const config: Partial<ConstructorParameters<typeof Human>[0]> = {
+  backend: 'cpu', // Force CPU to avoid WASM backend ENOENT in Node (tfjs-backend-wasm expects local .wasm files)
   modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/',
   debug: false,
   face: {
