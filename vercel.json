@@ -4,7 +4,10 @@
       "memory": 2048,
       "maxDuration": 60,
       "excludeFiles": "{node_modules/@tensorflow/tfjs-node-gpu,node_modules/**/demo,node_modules/**/test}/**",
-      "includeFiles": "node_modules/@vladmandic/human/**"
+      "includeFiles": [
+        "node_modules/@vladmandic/human/**",
+        "node_modules/@tensorflow/**"
+      ]
     }
   }
 }
