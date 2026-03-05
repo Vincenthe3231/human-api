@@ -8,6 +8,8 @@ Face recognition API that validates a captured face against a registered face st
 - **Face matching** — Compares the face embedding to the user’s stored descriptor (or derives it from a stored photo URL).
 - **Supabase integration** — Reads face embeddings or face photo URLs from your Supabase table (e.g. `profiles` or `users`).
 
+**Full API reference:** [docs/API.md](docs/API.md)
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18+)
@@ -38,14 +40,14 @@ Create a `.env` file in the project root (see `.env.example` if present). For th
 
 ## Development
 
-Run the dev server (Vercel dev on port 3001):
+Run the dev server (Vercel dev on port 3002):
 
 ```bash
 cd /home/vince/projects/human-api
-pnpm exec vercel dev --listen 3001
+pnpm exec vercel dev --listen 3002
 ```
 
-The API is available at `http://localhost:3001/api/v1/recognize`.
+The API is available at `http://localhost:3002/api/v1/recognize`.
 
 ## API
 
@@ -71,7 +73,7 @@ Validates a face image against the registered face for the given user.
 **Example**
 
 ```bash
-curl -X POST http://localhost:3001/api/v1/recognize \
+curl -X POST http://localhost:3002/api/v1/recognize \
   -H "Content-Type: application/json" \
   -d '{"userId":"user-uuid","image":"/9j/4AAQ..."}'
 ```

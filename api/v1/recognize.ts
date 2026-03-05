@@ -2,12 +2,22 @@
  * POST /api/v1/recognize
  * Validates captured face against registered face descriptor from Supabase.
  * Returns humanFace, match, confidence (only when >= 0.8), and debug info.
+ * Uses Sharp + @tensorflow/tfjs (CPU) for Node 24 compatibility (no tfjs-node).
  */
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 import { getHuman } from '../../lib/human';
 import { getStoredDescriptor, getStoredFacePhotoUrl } from '../../lib/supabase';
+import { decodeImageToTensor } from '../../lib/decodeImage';
 import { validateFace, compareFaces, isMatch, CONFIDENCE_THRESHOLD } from '../../lib/validate';
 import { createDebugLogger, generateRequestId } from '../../lib/debug';
+
+let backendReady = false;
+async function ensureTfBackend(): Promise<void> {
+  if (backendReady) return;
+  await tf.setBackend('cpu');
+  await tf.ready();
+  backendReady = true;
+}
 
 async function fetchImageAsUint8Array(url: string): Promise<Uint8Array> {
   const res = await fetch(url);
@@ -109,9 +119,10 @@ export default async function handler(req: Req, res: Res) {
       const photoUrl = await getStoredFacePhotoUrl(userId);
       if (photoUrl) {
         debug.fetchDescriptor('url');
+        await ensureTfBackend();
         const human = await getHuman();
         const imageBytes = await fetchImageAsUint8Array(photoUrl);
-        const refTensor = tf.node.decodeImage(imageBytes, 3) as tf.Tensor3D;
+        const refTensor = await decodeImageToTensor(imageBytes);
         try {
           const refResult = await validateFace(human, refTensor);
           if (refResult.humanFace) storedDescriptor = refResult.embedding;
@@ -153,9 +164,10 @@ export default async function handler(req: Req, res: Res) {
       return;
     }
 
+    await ensureTfBackend();
     const imageBytes = parseBase64ToUint8Array(imageBase64);
     const human = await getHuman();
-    const tensor = tf.node.decodeImage(imageBytes, 3) as tf.Tensor3D;
+    const tensor = await decodeImageToTensor(imageBytes);
 
     let validateResult: Awaited<ReturnType<typeof validateFace>>;
     try {
