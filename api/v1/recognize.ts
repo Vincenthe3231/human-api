@@ -5,9 +5,16 @@
  */
 import * as tf from '@tensorflow/tfjs-node';
 import { getHuman } from '../../lib/human';
-import { getStoredDescriptor } from '../../lib/supabase';
+import { getStoredDescriptor, getStoredFacePhotoUrl } from '../../lib/supabase';
 import { validateFace, compareFaces, isMatch, CONFIDENCE_THRESHOLD } from '../../lib/validate';
 import { createDebugLogger, generateRequestId } from '../../lib/debug';
+
+async function fetchImageAsUint8Array(url: string): Promise<Uint8Array> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+  const buf = await res.arrayBuffer();
+  return new Uint8Array(buf);
+}
 
 export const config = {
   api: {
@@ -99,9 +106,24 @@ export default async function handler(req: Req, res: Res) {
 
     let storedDescriptor: number[] | null = null;
     try {
-      storedDescriptor = await getStoredDescriptor(userId);
+      const photoUrl = await getStoredFacePhotoUrl(userId);
+      if (photoUrl) {
+        debug.fetchDescriptor('url');
+        const human = await getHuman();
+        const imageBytes = await fetchImageAsUint8Array(photoUrl);
+        const refTensor = tf.node.decodeImage(imageBytes, 3) as tf.Tensor3D;
+        try {
+          const refResult = await validateFace(human, refTensor);
+          if (refResult.humanFace) storedDescriptor = refResult.embedding;
+        } finally {
+          refTensor.dispose();
+        }
+      }
+      if (!storedDescriptor && !process.env.SUPABASE_FACE_URL_PHOTO_COLUMN) {
+        storedDescriptor = await getStoredDescriptor(userId);
+      }
       debug.fetchDescriptor(storedDescriptor ? 'ok' : 'not_found');
-    } catch (e) {
+    } catch (e: unknown) {
       debug.fetchDescriptor('error');
       debug.error('getStoredDescriptor failed', e);
       res.status(502).json({
