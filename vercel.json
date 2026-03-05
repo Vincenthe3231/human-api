@@ -3,8 +3,7 @@
     "api/v1/recognize.ts": {
       "memory": 2048,
       "maxDuration": 60,
-      "excludeFiles": "{node_modules/@tensorflow/tfjs-node-gpu,node_modules/**/demo,node_modules/**/test}/**",
-      "includeFiles": "node_modules/@{vladmandic,tensorflow}/**"
+      "includeFiles": "node_modules/@vladmandic/human/dist/**,node_modules/@tensorflow/**,node_modules/@mediapipe/**,node_modules/@vladmandic/face-api/**,node_modules/@vladmandic/mtcnn/**,node_modules/@vladmandic/tfjs-node/**"
     }
   }
 }
