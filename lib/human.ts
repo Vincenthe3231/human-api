@@ -1,14 +1,9 @@
-// Node-WASM build (no tfjs-node) for Vercel 250 MB limit; load by path to bypass exports
-import { createRequire } from 'module';
-import path from 'path';
+// Node-WASM build (no tfjs-node) for Vercel 250 MB limit.
+// Static import so Vercel Node File Trace includes this module in the serverless bundle.
 import type HumanConstructor from '@vladmandic/human';
+import HumanWasm from '@vladmandic/human/dist/human.node-wasm.js';
 
-const nodeRequire = createRequire(__filename);
-// Resolve main entry (exported), then go up to package root so we can require dist/human.node-wasm.js
-const humanMainPath = nodeRequire.resolve('@vladmandic/human');
-const humanPkgDir = path.dirname(path.dirname(humanMainPath));
-const HumanWasm = nodeRequire(path.join(humanPkgDir, 'dist', 'human.node-wasm.js'));
-const Human = (HumanWasm.default ?? HumanWasm) as typeof HumanConstructor;
+const Human = ((HumanWasm as { default?: unknown }).default ?? HumanWasm) as unknown as typeof HumanConstructor;
 
 const config: Partial<ConstructorParameters<typeof Human>[0]> = {
   backend: 'cpu', // Force CPU to avoid WASM backend ENOENT in Node (tfjs-backend-wasm expects local .wasm files)

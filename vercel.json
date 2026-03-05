@@ -3,7 +3,7 @@
     "api/v1/recognize.ts": {
       "memory": 2048,
       "maxDuration": 60,
-      "includeFiles": "node_modules/@vladmandic/human/dist/**,node_modules/@tensorflow/**,node_modules/@mediapipe/**,node_modules/@vladmandic/face-api/**,node_modules/@vladmandic/mtcnn/**,node_modules/@vladmandic/tfjs-node/**"
+      "includeFiles": "node_modules/@{vladmandic,tensorflow}/**"
     }
   }
 }
