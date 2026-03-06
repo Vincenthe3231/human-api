@@ -12,7 +12,7 @@
   "packageManager": "pnpm@10.25.0",
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "vercel": "^50.26.1"
+    "vercel": "^50.28.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.0",
