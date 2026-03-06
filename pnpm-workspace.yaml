@@ -1,0 +1,2 @@
+patchedDependencies:
+  '@vladmandic/human@3.3.6': patches/@vladmandic__human@3.3.6.patch

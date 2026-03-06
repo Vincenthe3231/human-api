@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@vladmandic/human@3.3.6':
+    hash: fc09c6d7c0b766bb39931550e38bcad4d97fe7728f1518534cf016e550a955fe
+    path: patches/@vladmandic__human@3.3.6.patch
+
 importers:
 
   .:
@@ -19,7 +24,7 @@ importers:
         version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
       '@vladmandic/human':
         specifier: ^3.3.6
-        version: 3.3.6
+        version: 3.3.6(patch_hash=fc09c6d7c0b766bb39931550e38bcad4d97fe7728f1518534cf016e550a955fe)
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
@@ -2674,7 +2679,7 @@ snapshots:
       json-schema-to-ts: 1.6.4
       ts-morph: 12.0.0
 
-  '@vladmandic/human@3.3.6': {}
+  '@vladmandic/human@3.3.6(patch_hash=fc09c6d7c0b766bb39931550e38bcad4d97fe7728f1518534cf016e550a955fe)': {}
 
   '@webgpu/types@0.1.38': {}
 
