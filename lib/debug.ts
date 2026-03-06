@@ -9,8 +9,11 @@ export function createDebugLogger(requestId: string) {
   return {
     request: (userId: string) =>
       console.log(`${PREFIX} userId=%s requestId=%s`, userId, requestId),
-    fetchDescriptor: (status: string) =>
-      console.log(`${PREFIX} fetch descriptor status=%s`, status),
+    fetchDescriptor: (status: string, detail?: string) =>
+      console.log(
+        `${PREFIX} fetch descriptor status=%s${detail ? ` (${detail})` : ''}`,
+        status
+      ),
     detection: (humanFace: boolean, faceCount?: number) =>
       console.log(
         `${PREFIX} humanFace=%s faces=%s`,

@@ -135,7 +135,14 @@ export default async function handler(req: Req, res: Res) {
         );
         referenceDescriptors = descriptorResults.filter((d): d is number[] => d !== null);
       }
-      debug.fetchDescriptor(referenceDescriptors.length > 0 ? 'ok' : 'not_found');
+      const descriptorStatus = referenceDescriptors.length > 0 ? 'ok' : 'not_found';
+      const descriptorDetail =
+        descriptorStatus === 'not_found'
+          ? photoUrls.length === 0
+            ? 'no photo URLs in DB for user'
+            : 'no valid face in photo(s)'
+          : undefined;
+      debug.fetchDescriptor(descriptorStatus, descriptorDetail);
     } catch (e: unknown) {
       debug.fetchDescriptor('error');
       debug.error('Fetch reference descriptors failed', e);
