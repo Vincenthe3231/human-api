@@ -6,7 +6,7 @@
  */
 import * as tf from '@tensorflow/tfjs';
 import { getHuman } from '../../lib/human';
-import { getStoredDescriptor, getStoredFacePhotoUrl } from '../../lib/supabase';
+import { getStoredDescriptor, getStoredFacePhotoUrls } from '../../lib/supabase';
 import { decodeImageToTensor } from '../../lib/decodeImage';
 import { validateFace, compareFaces, isMatch, CONFIDENCE_THRESHOLD } from '../../lib/validate';
 import { createDebugLogger, generateRequestId } from '../../lib/debug';
@@ -114,26 +114,34 @@ export default async function handler(req: Req, res: Res) {
 
     debug.request(userId);
 
-    let storedDescriptor: number[] | null = null;
+    let referenceDescriptors: number[][] = [];
     try {
-      const photoUrl = await getStoredFacePhotoUrl(userId);
-      if (photoUrl) {
+      const photoUrls = await getStoredFacePhotoUrls(userId);
+      if (photoUrls.length > 0) {
         debug.fetchDescriptor('url');
         await ensureTfBackend();
         const human = await getHuman();
-        const imageBytes = await fetchImageAsUint8Array(photoUrl);
-        const refTensor = await decodeImageToTensor(imageBytes);
-        try {
-          const refResult = await validateFace(human, refTensor);
-          if (refResult.humanFace) storedDescriptor = refResult.embedding;
-        } finally {
-          refTensor.dispose();
+        const descriptorResults = await Promise.all(
+          photoUrls.map(async (url) => {
+            const imageBytes = await fetchImageAsUint8Array(url);
+            const refTensor = await decodeImageToTensor(imageBytes);
+            try {
+              const refResult = await validateFace(human, refTensor);
+              return refResult.humanFace ? refResult.embedding : null;
+            } finally {
+              refTensor.dispose();
+            }
+          })
+        );
+        referenceDescriptors = descriptorResults.filter((d): d is number[] => d !== null);
+      }
+      if (referenceDescriptors.length === 0) {
+        const storedDescriptor = await getStoredDescriptor(userId);
+        if (storedDescriptor && storedDescriptor.length > 0) {
+          referenceDescriptors = [storedDescriptor];
         }
       }
-      if (!storedDescriptor && !process.env.SUPABASE_FACE_URL_PHOTO_COLUMN) {
-        storedDescriptor = await getStoredDescriptor(userId);
-      }
-      debug.fetchDescriptor(storedDescriptor ? 'ok' : 'not_found');
+      debug.fetchDescriptor(referenceDescriptors.length > 0 ? 'ok' : 'not_found');
     } catch (e: unknown) {
       debug.fetchDescriptor('error');
       debug.error('getStoredDescriptor failed', e);
@@ -150,7 +158,7 @@ export default async function handler(req: Req, res: Res) {
       return;
     }
 
-    if (!storedDescriptor || storedDescriptor.length === 0) {
+    if (referenceDescriptors.length === 0) {
       res.status(404).json({
         humanFace: false,
         match: false,
@@ -193,9 +201,13 @@ export default async function handler(req: Req, res: Res) {
       return;
     }
 
-    const similarity = compareFaces(human, storedDescriptor, validateResult.embedding);
-    const match = isMatch(similarity);
-    debug.match(similarity, match);
+    let bestSimilarity = 0;
+    for (const refDescriptor of referenceDescriptors) {
+      const similarity = compareFaces(human, refDescriptor, validateResult.embedding);
+      if (similarity > bestSimilarity) bestSimilarity = similarity;
+    }
+    const match = isMatch(bestSimilarity);
+    debug.match(bestSimilarity, match);
 
     const payload: {
       humanFace: boolean;
@@ -213,8 +225,8 @@ export default async function handler(req: Req, res: Res) {
       },
     };
 
-    if (similarity >= CONFIDENCE_THRESHOLD) {
-      payload.confidence = Math.round(similarity * 100) / 100;
+    if (bestSimilarity >= CONFIDENCE_THRESHOLD) {
+      payload.confidence = Math.round(bestSimilarity * 100) / 100;
     }
 
     debug.response(payload.debug.status, Date.now() - start);
