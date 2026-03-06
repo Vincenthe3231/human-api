@@ -5,8 +5,8 @@ Face recognition API that validates a captured face against a registered face st
 ## Features
 
 - **Face detection** — Detects whether the submitted image contains a human face.
-- **Face matching** — Compares the face embedding to the user’s stored descriptor (or derives it from a stored photo URL).
-- **Supabase integration** — Reads face embeddings or face photo URLs from your Supabase table (e.g. `profiles` or `users`).
+- **Face matching** — Compares the face embedding to the user’s reference descriptor derived from stored face photo URLs.
+- **Supabase integration** — Reads face photo URLs from your Supabase table (e.g. `profiles` or `users`) to compute the reference descriptor.
 
 **Full API reference:** [docs/API.md](docs/API.md)
 
@@ -14,9 +14,7 @@ Face recognition API that validates a captured face against a registered face st
 
 - [Node.js](https://nodejs.org/) (v18+)
 - [pnpm](https://pnpm.io/) (v10+)
-- A Supabase project with a table that has either:
-  - A face embedding column (array of numbers), or
-  - A face photo URL column (image URL used to compute the reference embedding)
+- A Supabase project with a table that has face photo URL column(s) (image URLs used to compute the reference embedding)
 
 ## Installation
 
@@ -34,8 +32,7 @@ Create a `.env` file in the project root (see `.env.example` if present). For th
 | `SUPABASE_URL` | Yes | Your Supabase project URL |
 | `SUPABASE_SECRET` | Yes | Supabase service role key (server-side only) |
 | `SUPABASE_FACE_TABLE` | No | Table name (default: `profiles`) |
-| `SUPABASE_FACE_EMBEDDING_COLUMN` | No | Column with face embedding array (default: `face_embedding`) |
-| `SUPABASE_FACE_URL_PHOTO_COLUMN` | No | If set, face is computed from this image URL instead of using a stored embedding |
+| `SUPABASE_FACE_URL_PHOTO_COLUMN` | No | If set, face is computed from this image URL |
 | `SUPABASE_USER_ID_COLUMN` | No | Column for user id (default: `id`) |
 
 ## Development

@@ -6,7 +6,7 @@
  */
 import * as tf from '@tensorflow/tfjs';
 import { getHuman } from '../../lib/human';
-import { getStoredDescriptor, getStoredFacePhotoUrls } from '../../lib/supabase';
+import { getStoredFacePhotoUrls } from '../../lib/supabase';
 import { decodeImageToTensor } from '../../lib/decodeImage';
 import { validateFace, compareFaces, isMatch, CONFIDENCE_THRESHOLD } from '../../lib/validate';
 import { createDebugLogger, generateRequestId } from '../../lib/debug';
@@ -135,16 +135,10 @@ export default async function handler(req: Req, res: Res) {
         );
         referenceDescriptors = descriptorResults.filter((d): d is number[] => d !== null);
       }
-      if (referenceDescriptors.length === 0) {
-        const storedDescriptor = await getStoredDescriptor(userId);
-        if (storedDescriptor && storedDescriptor.length > 0) {
-          referenceDescriptors = [storedDescriptor];
-        }
-      }
       debug.fetchDescriptor(referenceDescriptors.length > 0 ? 'ok' : 'not_found');
     } catch (e: unknown) {
       debug.fetchDescriptor('error');
-      debug.error('getStoredDescriptor failed', e);
+      debug.error('Fetch reference descriptors failed', e);
       res.status(502).json({
         humanFace: false,
         match: false,
