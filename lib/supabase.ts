@@ -9,6 +9,8 @@ const FACE_FRONT_URL_COLUMN = process.env.SUPABASE_FACE_FRONT_URL_COLUMN ?? '';
 const FACE_LEFT_URL_COLUMN = process.env.SUPABASE_FACE_LEFT_URL_COLUMN ?? '';
 const FACE_RIGHT_URL_COLUMN = process.env.SUPABASE_FACE_RIGHT_URL_COLUMN ?? '';
 const USER_ID_COLUMN = process.env.SUPABASE_USER_ID_COLUMN ?? 'id';
+const FACE_STORAGE_BUCKET = process.env.SUPABASE_FACE_STORAGE_BUCKET ?? 'profile-picture';
+const SIGNED_URL_EXPIRY = 60; // seconds
 
 let client: SupabaseClient | null = null;
 
@@ -43,7 +45,22 @@ export async function getStoredFacePhotoUrls(userId: string): Promise<string[]> 
 
   if (!data || typeof data !== 'object') return [];
 
-  return columns
+  const paths = columns
     .map((col) => (data as Record<string, unknown>)[col])
+    .filter((v): v is string => typeof v === 'string' && v.length > 0);
+
+  if (paths.length === 0) return [];
+
+  const supabaseClient = getSupabase();
+  const { data: signedData, error: signError } = await supabaseClient.storage
+    .from(FACE_STORAGE_BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_EXPIRY);
+
+  if (signError) {
+    throw new Error(`Supabase signed URL failed: ${signError.message}`);
+  }
+
+  return (signedData ?? [])
+    .map((item) => item.signedUrl)
     .filter((url): url is string => typeof url === 'string' && url.length > 0);
 }

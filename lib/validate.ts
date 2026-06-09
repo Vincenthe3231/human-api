@@ -1,7 +1,7 @@
 import type { Human } from '@vladmandic/human';
 
 const MATCH_OPTIONS = { order: 2, multiplier: 25, min: 0.2, max: 0.8 } as const;
-const CONFIDENCE_THRESHOLD = 0.8;
+const CONFIDENCE_THRESHOLD = 0.5;
 
 export type ValidateFaceResult =
   | { humanFace: true; embedding: number[] }
